@@ -12,9 +12,11 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Inicializar banco de dados
-const db = new sqlite3.Database('./database.db', (err) => {
+// Use in-memory database para Vercel, file-based para local
+const dbPath = process.env.VERCEL ? ':memory:' : './database.db';
+const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error(err.message);
-  else console.log('Conectado ao banco de dados SQLite');
+  else console.log(`Conectado ao banco de dados SQLite (${dbPath === ':memory:' ? 'em memória' : 'arquivo'})`);
 });
 
 // Criar tabelas
