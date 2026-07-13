@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Inicializar banco de dados
 const db = new sqlite3.Database('./database.db', (err) => {
@@ -44,6 +44,11 @@ db.serialize(() => {
 // Credenciais padrão do casal
 const COUPLE_USERNAME = 'arthureana';
 const COUPLE_PASSWORD = '123';
+
+// Servir index.html na raiz
+app.get('/', (_, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Login
 app.post('/api/login', (req, res) => {
