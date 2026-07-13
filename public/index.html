@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Espaço dedicado para oração e crescimento espiritual em conjunto." />
+  <title>Orações - Arthur & Ana</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div id="login-container" class="container login-active">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>🙏 Orações</h1>
+        <p>Um espaço para crescimento espiritual</p>
+      </div>
+
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label for="username">Código de Acesso</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Digite o código"
+            autocomplete="off"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Digite a senha"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+
+      <div class="login-hint">
+        <strong>Acesso:</strong><br />
+        Código: <code>arthureana</code><br />
+        Senha: <code>123</code>
+      </div>
+
+      <div id="login-error" class="error-message"></div>
+    </div>
+  </div>
+
+  <!-- APP SCREEN -->
+  <div id="app-container" class="app-container">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-content">
+        <h1>🙏 Orações</h1>
+        <button id="logout-btn" class="btn btn-secondary">Sair</button>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- VERSE SECTION -->
+      <section class="verse-section">
+        <div class="verse-card">
+          <p class="verse-text" id="verse-text">Orai sem cessar; em tudo dai graças, porque esta é a vontade de Deus em Cristo Jesus para convosco.</p>
+          <p class="verse-reference" id="verse-reference">1 Tessalonicenses 5:17-18</p>
+        </div>
+      </section>
+
+      <!-- PRAYER CARDS SECTION -->
+      <section class="prayer-status">
+        <div class="status-grid">
+          <!-- PERSON 1 CARD -->
+          <div class="person-card" id="person1-card">
+            <div class="vela-container">
+              <div class="vela-corpo">
+                <div class="vela-pavio"></div>
+                <div class="vela-chama"></div>
+                <div class="vela-base"></div>
+              </div>
+            </div>
+
+            <h3 id="person1-name">--</h3>
+
+            <div class="prayer-btn-container">
+              <button id="person1-btn" class="prayer-btn">Orei hoje 🙏</button>
+              <div class="prayer-status-display" id="person1-status">orou hoje ✦</div>
+            </div>
+
+            <div class="prayer-count">
+              Dias de Oração<br />
+              <strong id="person1-count">0</strong>
+            </div>
+          </div>
+
+          <!-- PERSON 2 CARD -->
+          <div class="person-card" id="person2-card">
+            <div class="vela-container">
+              <div class="vela-corpo">
+                <div class="vela-pavio"></div>
+                <div class="vela-chama"></div>
+                <div class="vela-base"></div>
+              </div>
+            </div>
+
+            <h3 id="person2-name">--</h3>
+
+            <div class="prayer-btn-container">
+              <button id="person2-btn" class="prayer-btn">Orei hoje 🙏</button>
+              <div class="prayer-status-display" id="person2-status">orou hoje ✦</div>
+            </div>
+
+            <div class="prayer-count">
+              Dias de Oração<br />
+              <strong id="person2-count">0</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAROUSEL SECTION -->
+      <section class="carousel-section">
+        <h2>Nossos Momentos</h2>
+        <div class="carousel-container">
+          <button class="carousel-btn carousel-btn-prev" id="prev-photo">❮</button>
+
+          <div class="carousel-wrapper">
+            <div class="carousel-slide" id="carousel-slide">
+              <img id="carousel-img" src="" alt="Momento especial" />
+            </div>
+          </div>
+
+          <button class="carousel-btn carousel-btn-next" id="next-photo">❯</button>
+        </div>
+
+        <div class="carousel-dots" id="carousel-dots"></div>
+      </section>
+
+      <!-- CALENDAR SECTION -->
+      <section class="calendar-section">
+        <h2>Histórico de Orações — <span id="month-year"></span></h2>
+        <div class="calendar">
+          <div class="calendar-header">
+            <button type="button" id="prev-month" class="btn-nav">❮</button>
+            <span id="current-month"></span>
+            <button type="button" id="next-month" class="btn-nav">❯</button>
+          </div>
+          <div class="weekdays">
+            <div class="weekday">Dom</div>
+            <div class="weekday">Seg</div>
+            <div class="weekday">Ter</div>
+            <div class="weekday">Qua</div>
+            <div class="weekday">Qui</div>
+            <div class="weekday">Sex</div>
+            <div class="weekday">Sab</div>
+          </div>
+          <div class="days" id="calendar-days"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p>"Orai sem cessar; em tudo dai graças, porque esta é a vontade de Deus em Cristo Jesus para convosco." — 1 Tessalonicenses 5:17-18</p>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
