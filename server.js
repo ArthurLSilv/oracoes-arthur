@@ -12,36 +12,36 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Inicializar banco de dados
-// Use in-memory database para Vercel, file-based para local
 const dbPath = process.env.VERCEL ? ':memory:' : './database.db';
 const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) console.error(err.message);
-  else console.log(`Conectado ao banco de dados SQLite (${dbPath === ':memory:' ? 'em memória' : 'arquivo'})`);
+  if (err) {
+    console.error('Erro ao conectar DB:', err.message);
+  } else {
+    console.log(`Conectado ao banco de dados SQLite (${dbPath === ':memory:' ? 'em memória' : 'arquivo'})`);
+  }
 });
 
-// Criar tabelas
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      name TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+// Criar tabelas sem bloquear
+db.run(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS prayers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      date TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(user_id) REFERENCES users(id),
-      UNIQUE(user_id, date)
-    )
-  `);
-});
+db.run(`
+  CREATE TABLE IF NOT EXISTS prayers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    UNIQUE(user_id, date)
+  )
+`);
 
 // Credenciais padrão do casal
 const COUPLE_USERNAME = 'arthureana';
