@@ -462,9 +462,10 @@ body {
 }
 
 .person-card.prayed .prayer-btn {
-  opacity: 0;
+  opacity: 0.5;
   pointer-events: none;
-  transform: scale(0.9);
+  background: rgba(212, 165, 116, 0.2);
+  cursor: not-allowed;
   transition: all 0.3s ease;
 }
 
@@ -627,8 +628,10 @@ body {
 .day {
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border);
@@ -637,6 +640,16 @@ body {
   cursor: default;
   transition: all 0.2s ease;
   font-weight: 500;
+}
+
+.day-number {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.day .heart {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .day:hover:not(.other-month) {
