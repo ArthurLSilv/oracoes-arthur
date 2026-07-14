@@ -218,23 +218,15 @@ async function renderCalendar() {
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     let className = '';
-    let heartEmoji = '';
 
     const p1Prayed = person1Prayers.includes(dateStr);
     const p2Prayed = person2Prayers.includes(dateStr);
 
     if (p1Prayed && p2Prayed) {
       className = 'prayed-both';
-      heartEmoji = '💕';
-    } else if (p1Prayed) {
-      className = 'prayed1';
-      heartEmoji = '🩷';
-    } else if (p2Prayed) {
-      className = 'prayed2';
-      heartEmoji = '💜';
     }
 
-    calendarDays.appendChild(createDayElement(day, className, heartEmoji));
+    calendarDays.appendChild(createDayElement(day, className));
   }
 
   // Next month days
@@ -245,10 +237,10 @@ async function renderCalendar() {
   }
 }
 
-function createDayElement(day, className, heartEmoji = '') {
+function createDayElement(day, className) {
   const div = document.createElement('div');
   div.className = `day ${className}`;
-  div.innerHTML = `<span class="day-number">${day}</span>${heartEmoji ? `<span class="heart">${heartEmoji}</span>` : ''}`;
+  div.textContent = day;
   return div;
 }
 
