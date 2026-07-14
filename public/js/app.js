@@ -3,7 +3,7 @@ let users = [];
 let currentMonth = new Date();
 let currentPhotoIndex = 0;
 let autoplayInterval = null;
-const totalPhotos = 14;
+const totalPhotos = 15;
 const AUTOPLAY_DELAY = 3000; // 3 segundos
 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
