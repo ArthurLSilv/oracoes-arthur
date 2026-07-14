@@ -181,10 +181,19 @@ app.get('/api/prayer-count/:user_id', (req, res) => {
   });
 });
 
+// Helper function to get today's date in local timezone
+function getTodayDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Verificar se já orou hoje
 app.get('/api/prayed-today/:user_id', (req, res) => {
   const { user_id } = req.params;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayDate();
 
   db.get('SELECT id FROM prayers WHERE user_id = ? AND date = ?', [user_id, today], (err, row) => {
     if (err) {

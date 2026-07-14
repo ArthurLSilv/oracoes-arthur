@@ -7,6 +7,15 @@ const totalPhotos = 15;
 const AUTOPLAY_DELAY = 3000; // 3 segundos
 const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
+// Get today's date in local timezone (YYYY-MM-DD format)
+function getTodayDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
@@ -132,7 +141,7 @@ function setupPrayerButtons() {
 
 async function markPrayer(userId, personId) {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayDate();
     const response = await fetch('/api/prayer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
