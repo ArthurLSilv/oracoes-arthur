@@ -1,185 +1,29 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Supabase initialization
+const SUPABASE_URL = 'https://mgcubzhxuegpjqpctwsk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_0vS3AMysNghVw25CW0EeKQ_tcvah7cB';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Inicializar banco de dados
-const dbPath = process.env.VERCEL ? ':memory:' : './database.db';
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Erro ao conectar DB:', err.message);
-  } else {
-    console.log(`Conectado ao banco de dados SQLite (${dbPath === ':memory:' ? 'em memória' : 'arquivo'})`);
-  }
-});
-
-// Criar tabelas sem bloquear
-db.run(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    name TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-db.run(`
-  CREATE TABLE IF NOT EXISTS prayers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    date TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    UNIQUE(user_id, date)
-  )
-`);
-
-// Credenciais padrão do casal
-const COUPLE_USERNAME = 'arthureana';
-const COUPLE_PASSWORD = '123';
 
 // Servir index.html na raiz
 app.get('/', (_, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Login
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === COUPLE_USERNAME && password === COUPLE_PASSWORD) {
-    // Check if users already exist
-    db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao verificar usuários' });
-      }
-
-      if (row.count === 0) {
-        // Create users on first login
-        db.run(
-          'INSERT INTO users (username, password, name) VALUES (?, ?, ?)',
-          [COUPLE_USERNAME + '_arthur', password, 'Arthur Silva'],
-          function (err1) {
-            if (err1) {
-              return res.status(500).json({ error: 'Erro ao criar conta' });
-            }
-
-            db.run(
-              'INSERT INTO users (username, password, name) VALUES (?, ?, ?)',
-              [COUPLE_USERNAME + '_ana', password, 'Ana Follmann'],
-              function (err2) {
-                if (err2) {
-                  return res.status(500).json({ error: 'Erro ao criar conta' });
-                }
-                res.json({ success: true });
-              }
-            );
-          }
-        );
-      } else {
-        res.json({ success: true });
-      }
-    });
-  } else {
-    res.status(401).json({ success: false, message: 'Credenciais inválidas' });
-  }
-});
-
-// Registro (primeira vez)
-app.post('/api/register', (req, res) => {
-  const { username, password, name1, name2 } = req.body;
-
-  if (username !== COUPLE_USERNAME || password !== COUPLE_PASSWORD) {
-    return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
-  }
-
-  db.run(
-    'INSERT INTO users (username, password, name) VALUES (?, ?, ?)',
-    [username + '_pessoa1', password, name1],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao criar conta' });
-      }
-
-      db.run(
-        'INSERT INTO users (username, password, name) VALUES (?, ?, ?)',
-        [username + '_pessoa2', password, name2],
-        function (err) {
-          if (err) {
-            return res.status(500).json({ error: 'Erro ao criar segunda conta' });
-          }
-
-          db.all('SELECT id, name FROM users WHERE username LIKE ?', [username + '%'], (err, users) => {
-            res.json({ success: true, users });
-          });
-        }
-      );
-    }
-  );
-});
-
-// Obter informações do casal
-app.get('/api/casal-info', (req, res) => {
-  db.all('SELECT id, name FROM users WHERE username LIKE ?', [COUPLE_USERNAME + '%'], (err, users) => {
-    if (err) {
-      return res.status(500).json({ error: 'Erro ao buscar usuários' });
-    }
-    res.json(users);
-  });
-});
-
-// Marcar oração do dia
-app.post('/api/prayer', (req, res) => {
-  const { user_id, date } = req.body;
-
-  db.run(
-    'INSERT OR IGNORE INTO prayers (user_id, date) VALUES (?, ?)',
-    [user_id, date],
-    function (err) {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao registrar oração' });
-      }
-      res.json({ success: true });
-    }
-  );
-});
-
-// Obter orações do mês
-app.get('/api/prayers/:user_id/:month', (req, res) => {
-  const { user_id, month } = req.params;
-
-  db.all(
-    `SELECT date FROM prayers WHERE user_id = ? AND date LIKE ?`,
-    [user_id, month + '%'],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao buscar orações' });
-      }
-      res.json(rows.map((r) => r.date));
-    }
-  );
-});
-
-// Obter contagem total de dias de oração
-app.get('/api/prayer-count/:user_id', (req, res) => {
-  const { user_id } = req.params;
-
-  db.get('SELECT COUNT(*) as count FROM prayers WHERE user_id = ?', [user_id], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: 'Erro ao buscar contagem' });
-    }
-    res.json({ count: row.count });
-  });
-});
+// Credenciais padrão do casal
+const COUPLE_USERNAME = 'arthureana';
+const COUPLE_PASSWORD = '123';
 
 // Helper function to get today's date in local timezone
 function getTodayDate() {
@@ -190,19 +34,172 @@ function getTodayDate() {
   return `${year}-${month}-${day}`;
 }
 
+// Login
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === COUPLE_USERNAME && password === COUPLE_PASSWORD) {
+    try {
+      // Check if users already exist
+      const { data: existingUsers, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .limit(1);
+
+      if (checkError) {
+        return res.status(500).json({ error: 'Erro ao verificar usuários' });
+      }
+
+      if (!existingUsers || existingUsers.length === 0) {
+        // Create users on first login
+        const { data: insertedUsers, error: insertError } = await supabase
+          .from('users')
+          .insert([
+            {
+              username: COUPLE_USERNAME + '_arthur',
+              password: password,
+              name: 'Arthur Silva'
+            },
+            {
+              username: COUPLE_USERNAME + '_ana',
+              password: password,
+              name: 'Ana Follmann'
+            }
+          ]);
+
+        if (insertError) {
+          return res.status(500).json({ error: 'Erro ao criar contas' });
+        }
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Erro no servidor' });
+    }
+  } else {
+    res.status(401).json({ success: false, message: 'Credenciais inválidas' });
+  }
+});
+
+// Obter informações do casal
+app.get('/api/casal-info', async (req, res) => {
+  try {
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, name')
+      .order('id', { ascending: true });
+
+    if (error) {
+      return res.status(500).json({ error: 'Erro ao buscar usuários' });
+    }
+
+    res.json(users || []);
+  } catch (error) {
+    console.error('Error fetching casal info:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+});
+
+// Marcar oração do dia
+app.post('/api/prayer', async (req, res) => {
+  const { user_id, date } = req.body;
+
+  try {
+    const { error } = await supabase
+      .from('prayers')
+      .insert([
+        {
+          user_id: user_id,
+          date: date
+        }
+      ]);
+
+    if (error) {
+      // If it's a unique constraint error, it's OK (already prayed)
+      if (error.code === '23505') {
+        return res.json({ success: true });
+      }
+      return res.status(500).json({ error: 'Erro ao registrar oração' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error marking prayer:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+});
+
+// Obter orações do mês
+app.get('/api/prayers/:user_id/:month', async (req, res) => {
+  const { user_id, month } = req.params;
+
+  try {
+    const { data: prayers, error } = await supabase
+      .from('prayers')
+      .select('date')
+      .eq('user_id', user_id)
+      .like('date', month + '%');
+
+    if (error) {
+      return res.status(500).json({ error: 'Erro ao buscar orações' });
+    }
+
+    const dates = prayers ? prayers.map(p => p.date) : [];
+    res.json(dates);
+  } catch (error) {
+    console.error('Error fetching prayers:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+});
+
+// Obter contagem total de dias de oração
+app.get('/api/prayer-count/:user_id', async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    const { data: prayers, error } = await supabase
+      .from('prayers')
+      .select('id', { count: 'exact' })
+      .eq('user_id', user_id);
+
+    if (error) {
+      return res.status(500).json({ error: 'Erro ao buscar contagem' });
+    }
+
+    const count = prayers ? prayers.length : 0;
+    res.json({ count: count });
+  } catch (error) {
+    console.error('Error fetching prayer count:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+});
+
 // Verificar se já orou hoje
-app.get('/api/prayed-today/:user_id', (req, res) => {
+app.get('/api/prayed-today/:user_id', async (req, res) => {
   const { user_id } = req.params;
   const today = getTodayDate();
 
-  db.get('SELECT id FROM prayers WHERE user_id = ? AND date = ?', [user_id, today], (err, row) => {
-    if (err) {
+  try {
+    const { data: prayers, error } = await supabase
+      .from('prayers')
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('date', today);
+
+    if (error) {
       return res.status(500).json({ error: 'Erro ao verificar oração' });
     }
-    res.json({ prayed: !!row });
-  });
+
+    const prayed = prayers && prayers.length > 0;
+    res.json({ prayed: prayed });
+  } catch (error) {
+    console.error('Error checking if prayed today:', error);
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
 });
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Conectado ao Supabase: ${SUPABASE_URL}`);
 });
