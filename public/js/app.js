@@ -131,11 +131,22 @@ function updateUserInfo() {
 
 // ===== PRAYER BUTTONS =====
 function setupPrayerButtons() {
+  if (!users || users.length < 2) {
+    console.error('Users not loaded yet');
+    return;
+  }
+
   ['person1', 'person2'].forEach((personId, index) => {
     const btn = document.getElementById(`${personId}-btn`);
-    btn.addEventListener('click', async () => {
-      await markPrayer(users[index].id, personId);
-    });
+    if (btn) {
+      // Remove old listeners and add new one
+      btn.onclick = null;
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        await markPrayer(users[index].id, personId);
+        btn.disabled = false;
+      });
+    }
   });
 }
 
@@ -149,8 +160,10 @@ async function markPrayer(userId, personId) {
     });
 
     if (response.ok) {
-      updatePrayerStatus();
-      renderCalendar();
+      await updatePrayerStatus();
+      await renderCalendar();
+    } else {
+      console.error('Error:', response.statusText);
     }
   } catch (error) {
     console.error('Error marking prayer:', error);
@@ -158,30 +171,40 @@ async function markPrayer(userId, personId) {
 }
 
 async function updatePrayerStatus() {
+  if (!users || users.length === 0) return;
+
   for (let i = 0; i < users.length; i++) {
     const personId = `person${i + 1}`;
     const userId = users[i].id;
 
     try {
-      const response = await fetch(`/api/prayed-today/${userId}`);
-      const data = await response.json();
+      // Fetch if prayed today
+      const prayedResponse = await fetch(`/api/prayed-today/${userId}`);
+      if (!prayedResponse.ok) throw new Error('Failed to fetch prayed status');
+      const prayedData = await prayedResponse.json();
+
+      // Fetch prayer count
+      const countResponse = await fetch(`/api/prayer-count/${userId}`);
+      if (!countResponse.ok) throw new Error('Failed to fetch prayer count');
+      const countData = await countResponse.json();
+
+      // Update UI
       const card = document.getElementById(`${personId}-card`);
       const btn = document.getElementById(`${personId}-btn`);
+      const countElement = document.getElementById(`${personId}-count`);
 
-      if (data.prayed) {
-        card.classList.add('prayed');
-        btn.disabled = true;
-      } else {
-        card.classList.remove('prayed');
-        btn.disabled = false;
+      if (card && btn && countElement) {
+        if (prayedData.prayed) {
+          card.classList.add('prayed');
+          btn.disabled = true;
+        } else {
+          card.classList.remove('prayed');
+          btn.disabled = false;
+        }
+        countElement.textContent = countData.count || 0;
       }
-
-      // Update count
-      const countResponse = await fetch(`/api/prayer-count/${userId}`);
-      const countData = await countResponse.json();
-      document.getElementById(`${personId}-count`).textContent = countData.count;
     } catch (error) {
-      console.error('Error updating prayer status:', error);
+      console.error(`Error updating ${personId} prayer status:`, error);
     }
   }
 }
