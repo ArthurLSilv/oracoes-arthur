@@ -462,11 +462,7 @@ body {
 }
 
 .person-card.prayed .prayer-btn {
-  opacity: 0.5;
-  pointer-events: none;
-  background: rgba(212, 165, 116, 0.2);
-  cursor: not-allowed;
-  transition: all 0.3s ease;
+  display: none;
 }
 
 .prayer-status-display {
