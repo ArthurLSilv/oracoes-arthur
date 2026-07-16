@@ -68,7 +68,8 @@ app.post('/api/login', async (req, res) => {
           ]);
 
         if (insertError) {
-          return res.status(500).json({ error: 'Erro ao criar contas' });
+          console.error('Insert error:', insertError);
+          return res.status(500).json({ error: 'Erro ao criar contas', details: insertError.message });
         }
       }
 
