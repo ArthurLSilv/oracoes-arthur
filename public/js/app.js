@@ -109,8 +109,8 @@ async function loadAppData() {
       showApp();
       updateUserInfo();
       setupPrayerButtons();
-      updatePrayerStatus();
-      renderCalendar();
+      await updatePrayerStatus();
+      await renderCalendar();
     }
   } catch (error) {
     console.error('Error loading app data:', error);
